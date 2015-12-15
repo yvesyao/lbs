@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+	<style type="text/css">
+		#tool {
+			margin: 1em 0;
+		}
+		#allmap {
+			width: 800px;
+			height: 500px;
+			overflow: hidden;
+			margin:0;
+			font-family:"微软雅黑";
+		}
+	</style>
+	<script type="text/javascript" src="http://api.map.baidu.com/api?v=2.0&ak=75faf6e7e360dbc924c1a45c71799072"></script>
+	<title>GPS转百度</title>
+</head>
+<body>
+	<div id="tool">
+		<label>x：<input type="number" id="x" value="116.405" required></label>
+		<label>y：<input type="number" id="y" value="39.915" required></label>
+		<button id="search">搜索</button>
+	</div>
+	<div id="allmap"></div>
+</body>
+</html>
+<script type="text/javascript">
+(function() {
+	var map 		= new BMap.Map("allmap"),// 创建Map实例
+		$x 			= document.getElementById('x'),
+		$y 			= document.getElementById('y'),
+		$search 	= document.getElementById('search'),
+		pointStack  = [];
+		map.enableScrollWheelZoom();
+
+	$search.onclick = function() {
+		var _x = x.value, 
+			_y = y.value;
+		//清空现有小锚点
+		for(var i = 0; i < pointStack.length; ++i) {
+			map.removeOverlay(pointStack[i]);
+		}
+		centerAndZoom(_x, _y);
+		generatePoints(_x, _y);
+	}
+
+	/**
+	 * 居中显示到对应点
+	 * @param  {[type]} x [description]
+	 * @param  {[type]} y [description]
+	 */
+	function centerAndZoom(x, y) {
+		map.centerAndZoom(new BMap.Point(x, y),15);
+		//生成并缓存锚点
+		pointStack.push(addMarker(x, y));
+	}
+
+	/**
+	 * 添加小锚点
+	 * @param {[type]} x    [description]
+	 * @param {[type]} y    [description]
+	 * @param {[type]} text 锚点标签
+	 * @return {[type]}   	生成的小猫点
+	 */
+	function addMarker(x, y, text) {
+		//添加谷歌marker和label
+	    var markergg = new BMap.Marker(new BMap.Point(x, y));
+	    map.addOverlay(markergg); //添加谷歌marker
+	    var labelgg = new BMap.Label(text || '',{offset:new BMap.Size(20,-10)});
+	    markergg.setLabel(labelgg); //添加谷歌label
+	    return markergg;
+	}
+
+	/**
+	 * 随机生成十个偏移锚点
+	 * @param  {[type]} x    [description]
+	 * @param  {[type]} y    [description]
+	 * @param  {[type]} text [description]
+	 * @return {[type]}      [description]
+	 */
+	function generatePoints(x, y, text) {
+		for(var i = 0; i < 10; ++i) {
+			var _new = {
+				x: random(x),
+				y: random(y)
+			}
+			//生成并缓存锚点
+			pointStack.push(addMarker(_new.x, _new.y, text || 'text'));
+		}
+	}
+
+	/**
+	 * 随机生成点
+	 * @param  {[type]} num [description]
+	 * @return {[type]}     [description]
+	 */
+	function random(num) {
+		num = num + '';// 转换为字符串
+		return num.slice(0, num.length - 1) + Math.floor(Math.random()*10);
+	}
+
+	centerAndZoom(x.value, y.value);
+})()
+</script>
